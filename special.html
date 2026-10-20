@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PITCHAZO — Football Lineup Builder</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            gold: '#FFD700',
+                            goldGlow: '#facc15',
+                            dark: '#080808',
+                            card: '#121215',
+                            border: '#222228',
+                            hover: '#1a1a20'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Icons & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- html2canvas for Exporting PNG -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #080808;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* =========================
+           HEADER UNIFORM (PITCHAZO STANDARD)
+        ========================= */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 40px;
+            background: rgba(10, 10, 10, 0.88);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #FFD700;
+            border-radius: 10px;
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: 900;
+            box-shadow: 0 0 18px rgba(255, 215, 0, 0.2);
+        }
+
+        .brand-name {
+            color: #fff;
+            font-size: 21px;
+            font-weight: 900;
+            letter-spacing: 3px;
+        }
+
+        nav {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        nav a {
+            color: #666;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            transition: .3s;
+        }
+
+        nav a:hover,
+        nav a.active {
+            color: #FFD700;
+        }
+
+        /* =========================
+           FOOTER UNIFORM (PITCHAZO STANDARD)
+        ========================= */
+        .site-footer {
+            margin-top: 80px;
+            padding: 50px 20px 30px;
+            text-align: center;
+            background: linear-gradient(180deg, transparent, rgba(255, 215, 0, 0.04));
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-brand {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: #FFD700;
+            text-shadow: 0 0 18px rgba(255, 215, 0, 0.35);
+        }
+
+        .footer-line {
+            width: 50px;
+            height: 2px;
+            margin: 14px auto;
+            background: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .site-footer p {
+            margin: 0;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .site-footer span {
+            display: block;
+            margin-top: 10px;
+            color: #666;
+            font-size: 11px;
+        }
+
+        /* CUSTOM BUILDER EFFECTS */
+        .gold-glow-header {
+            text-shadow: 0 0 20px rgba(250, 204, 21, 0.65), 0 0 40px rgba(234, 179, 8, 0.35);
+        }
+
+        .gold-box-glow {
+            box-shadow: 0 0 25px rgba(250, 204, 21, 0.18), inset 0 0 15px rgba(250, 204, 21, 0.05);
+        }
+
+        .gold-node-glow {
+            box-shadow: 0 0 18px rgba(250, 204, 21, 0.65);
+        }
+
+        .gold-node-glow:hover {
+            box-shadow: 0 0 28px rgba(250, 204, 21, 0.95);
+            transform: scale(1.15) translateY(-2px);
+        }
+
+        .pitch-canvas {
+            background-color: #070709;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(250, 204, 21, 0.04) 0%, transparent 70%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px, 28px 28px;
+        }
+
+        .pitch-line-gold { border-color: rgba(250, 204, 21, 0.35); }
+        .pitch-bg-gold { background-color: rgba(250, 204, 21, 0.35); }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #070708; }
+        ::-webkit-scrollbar-thumb { background: #22222a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FFD700; }
+
+        .player-node {
+            touch-action: none;
+            user-select: none;
+            z-index: 20;
+            will-change: left, top;
+        }
+        .player-node.dragging {
+            opacity: 0.95;
+            z-index: 50 !important;
+            cursor: grabbing !important;
+        }
+
+        .export-render-fix {
+            line-height: 1.15 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        @keyframes passingBall {
+            0% { left: 25%; top: 50%; opacity: 1; }
+            22% { left: 50%; top: 33%; opacity: 1; }
+            25% { left: 50%; top: 33%; opacity: 0.2; }
+            28% { left: 50%; top: 33%; opacity: 1; }
+            47% { left: 66%; top: 50%; opacity: 1; }
+            50% { left: 66%; top: 50%; opacity: 0.2; }
+            53% { left: 66%; top: 50%; opacity: 1; }
+            72% { left: 50%; top: 67%; opacity: 1; }
+            75% { left: 50%; top: 67%; opacity: 0.2; }
+            78% { left: 50%; top: 67%; opacity: 1; }
+            97% { left: 25%; top: 50%; opacity: 1; }
+            100% { left: 25%; top: 50%; opacity: 1; }
+        }
+
+        .anim-passing-ball {
+            animation: passingBall 5s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        @media (max-width: 700px) {
+            .site-header { padding: 16px 20px; }
+            .brand-name { font-size: 17px; letter-spacing: 2px; }
+            .brand-mark { width: 32px; height: 32px; font-size: 17px; }
+            nav { display: none; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-yellow-400 selection:text-black">
+
+    <!-- HEADER (SAMAKAN DENGAN UNIFORM PITCHAZO) -->
+    <header class="site-header">
+        <a class="header-brand">
+            <span class="brand-mark">P</span>
+            <span class="brand-name">PITCHAZO</span>
+        </a>
+
+        <nav>
+            <a class="active">LINEUP BUILDER</a>
+            <button id="btn-export-img" class="ml-4 px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold text-xs tracking-wider uppercase transition shadow-[0_0_15px_rgba(250,204,21,0.3)] hover:shadow-[0_0_25px_rgba(250,204,21,0.6)] hover:scale-105 flex items-center gap-2">
+                <i class="fa-solid fa-download"></i>
+                <span>Export Lineup</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- HERO / BANNER -->
+    <section id="hero-section" class="w-full max-w-7xl mx-auto px-6 pt-10 pb-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div class="lg:col-span-7 space-y-5">
+            <div class="inline-block text-xs font-black tracking-widest text-yellow-400 uppercase">
+                SPECIAL PROJECT
+            </div>
+            <h1 class="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-tight text-white">
+                PITCHAZO<br>
+                <span class="text-yellow-400 gold-glow-header">LINEUP BUILDER</span>
+            </h1>
+            <p class="text-slate-400 text-sm sm:text-base max-w-xl leading-relaxed font-normal">
+                Create, customize, and export high-resolution European football lineups with a luxury black and gold aesthetic.
+            </p>
+        </div>
+
+        <div class="lg:col-span-5 flex justify-center">
+            <div class="w-full max-w-md aspect-[16/10] bg-black border border-yellow-400/40 rounded-2xl p-4 relative overflow-hidden flex items-center justify-center gold-box-glow group hover:border-yellow-400 transition cursor-pointer" id="mini-hero-pitch">
+                <div class="absolute inset-4 border border-yellow-400/30 rounded-lg pointer-events-none"></div>
+                <div class="absolute top-4 bottom-4 left-1/2 border-l border-yellow-400/30 pointer-events-none"></div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-yellow-400/30 rounded-full pointer-events-none"></div>
+                
+                <svg class="absolute inset-0 w-full h-full pointer-events-none stroke-yellow-400/30 stroke-[1.5]" style="stroke-dasharray: 4 4;">
+                    <line x1="25%" y1="50%" x2="50%" y2="33%" />
+                    <line x1="50%" y1="33%" x2="66%" y2="50%" />
+                    <line x1="66%" y1="50%" x2="50%" y2="67%" />
+                    <line x1="50%" y1="67%" x2="25%" y2="50%" />
+                </svg>
+
+                <div id="hero-node-10" class="hero-interactive-node absolute left-1/4 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black border-2 border-yellow-400 text-yellow-400 font-bold text-xs flex items-center justify-center gold-node-glow hover:scale-125 transition">10</div>
+                <div id="hero-node-7" class="hero-interactive-node absolute left-1/2 top-[33%] -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black border-2 border-yellow-400 text-yellow-400 font-bold text-xs flex items-center justify-center gold-node-glow hover:scale-125 transition">7</div>
+                <div id="hero-node-8" class="hero-interactive-node absolute left-1/2 top-[67%] -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black border-2 border-yellow-400 text-yellow-400 font-bold text-xs flex items-center justify-center gold-node-glow hover:scale-125 transition">8</div>
+                <div id="hero-node-9" class="hero-interactive-node absolute left-[66%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black border-2 border-yellow-400 text-yellow-400 font-bold text-xs flex items-center justify-center gold-node-glow hover:scale-125 transition">9</div>
+                <div id="hero-node-11" class="hero-interactive-node absolute right-8 top-1/4 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black border-2 border-yellow-400 text-yellow-400 font-bold text-xs flex items-center justify-center gold-node-glow hover:scale-125 transition">11</div>
+                
+                <div id="hero-passing-ball" class="anim-passing-ball absolute w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_12px_#ffffff,0_0_20px_#facc15] z-30"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN BUILDER -->
+    <main id="tactical-pitch" class="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <section class="lg:col-span-5 space-y-6 order-2 lg:order-1">
+            <div class="bg-brand-card border border-brand-border rounded-xl p-1.5 flex text-xs font-bold text-slate-400 gap-1">
+                <button data-tab="tab-tactics" class="tab-btn active flex-1 py-2.5 rounded-lg transition text-center bg-yellow-400 text-black font-extrabold shadow-[0_0_15px_rgba(250,204,21,0.3)]">
+                    <i class="fa-solid fa-sliders mr-1.5"></i> Tactics & Team
+                </button>
+                <button data-tab="tab-squad" class="tab-btn flex-1 py-2.5 rounded-lg transition text-center hover:text-yellow-400">
+                    <i class="fa-solid fa-users mr-1.5"></i> Squad (<span id="squad-count">11</span>/11)
+                </button>
+                <button data-tab="tab-appearance" class="tab-btn flex-1 py-2.5 rounded-lg transition text-center hover:text-yellow-400">
+                    <i class="fa-solid fa-paint-brush mr-1.5"></i> Style
+                </button>
+            </div>
+
+            <!-- TACTICS TAB -->
+            <div id="tab-tactics" class="tab-content space-y-5">
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4">
+                    <h3 class="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i> Team Identity
+                    </h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Team Name</label>
+                            <input type="text" id="input-team-name" value="MANCHESTER CITY" class="w-full bg-black border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:border-yellow-400 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Head Coach</label>
+                            <input type="text" id="input-manager-name" value="Enzo Maresca" class="w-full bg-black border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:border-yellow-400 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-chess-board"></i> Choose Formation
+                        </h3>
+                        <span class="text-[10px] text-slate-500 font-semibold">Standard Tactical Systems</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2.5" id="formation-buttons"></div>
+                </div>
+
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4">
+                    <h3 class="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-star text-yellow-400"></i> Star Substitutes Bench
+                    </h3>
+                    <p class="text-xs text-slate-400">Click to quickly add world-class players to your bench:</p>
+                    <div class="flex flex-wrap gap-2" id="preset-players-container"></div>
+                </div>
+            </div>
+
+            <!-- SQUAD TAB -->
+            <div id="tab-squad" class="tab-content hidden space-y-5">
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4">
+                    <h3 class="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Add New Player
+                    </h3>
+                    <form id="form-add-player" class="space-y-3">
+                        <div class="grid grid-cols-12 gap-2">
+                            <div class="col-span-3">
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">Jersey No.</label>
+                                <input type="number" id="new-player-number" min="1" max="99" value="10" required class="w-full bg-black border border-brand-border rounded-xl px-2 py-2 text-xs text-center text-yellow-400 font-bold focus:border-yellow-400 focus:outline-none">
+                            </div>
+                            <div class="col-span-6">
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">Player Name</label>
+                                <input type="text" id="new-player-name" placeholder="e.g. Erling Haaland" required class="w-full bg-black border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:border-yellow-400 focus:outline-none">
+                            </div>
+                            <div class="col-span-3">
+                                <label class="block text-[10px] font-semibold text-slate-400 mb-1">Position</label>
+                                <select id="new-player-role" class="w-full bg-black border border-brand-border rounded-xl px-1 py-2 text-xs text-white focus:border-yellow-400 focus:outline-none">
+                                    <option value="GK">GK</option>
+                                    <option value="CB">CB</option>
+                                    <option value="LB">LB</option>
+                                    <option value="RB">RB</option>
+                                    <option value="CM" selected>CM</option>
+                                    <option value="CAM">CAM</option>
+                                    <option value="LW">LW</option>
+                                    <option value="RW">RW</option>
+                                    <option value="ST">ST</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-400 mb-1">Overall Rating (OVR)</label>
+                            <input type="number" id="new-player-rating" min="50" max="99" value="88" class="w-full bg-black border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:border-yellow-400 focus:outline-none">
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold rounded-xl text-xs uppercase tracking-wider transition shadow-[0_0_15px_rgba(250,204,21,0.2)] flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Add to Substitutes
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-chair text-yellow-400"></i> Substitutes Bench (<span id="bench-count">0</span>)
+                        </h3>
+                        <span class="text-[10px] text-slate-500">Swap with Starters</span>
+                    </div>
+
+                    <div id="bench-list" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+
+            <!-- APPEARANCE TAB -->
+            <div id="tab-appearance" class="tab-content hidden space-y-5">
+                <div class="bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4">
+                    <h3 class="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-circle-dot"></i> Player Marker Badge Style
+                    </h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 p-3 rounded-xl bg-black border border-brand-border text-xs cursor-pointer hover:border-yellow-400 transition">
+                            <input type="radio" name="node-style" value="glowing-circle" checked class="text-yellow-400 focus:ring-0">
+                            <span class="font-bold">Neon Glow Ring</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl bg-black border border-brand-border text-xs cursor-pointer hover:border-yellow-400 transition">
+                            <input type="radio" name="node-style" value="compact-badge" class="text-yellow-400 focus:ring-0">
+                            <span class="font-bold">Tactical Badge</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISUALIZER CANVAS -->
+        <section class="lg:col-span-7 flex flex-col items-center justify-start order-1 lg:order-2">
+            <div id="pitch-export-area" class="w-full bg-brand-card p-5 sm:p-7 rounded-3xl border border-yellow-400/30 shadow-2xl flex flex-col items-center gold-box-glow">
+                <div class="w-full flex justify-between items-center mb-5 px-2">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-2xl bg-black border-2 border-yellow-400 p-0.5 shadow-[0_0_15px_rgba(250,204,21,0.4)] flex items-center justify-center">
+                            <span class="text-yellow-400 font-black text-lg">P</span>
+                        </div>
+                        <div>
+                            <h2 id="display-team-name" class="text-lg font-black text-white tracking-widest uppercase gold-glow-header">MANCHESTER CITY</h2>
+                            <p class="text-[11px] text-slate-400">Head Coach: <span id="display-manager-name" class="text-yellow-400 font-bold">Enzo Maresca</span></p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span id="display-formation-name" class="px-3.5 py-1.5 bg-black text-yellow-400 border border-yellow-400 rounded-full text-xs font-black tracking-widest shadow-[0_0_10px_rgba(250,204,21,0.3)]">
+                            4-3-3
+                        </span>
+                    </div>
+                </div>
+
+                <div id="football-pitch" class="relative w-full aspect-[2/3] sm:aspect-[3/4] max-w-[520px] rounded-2xl overflow-hidden border-2 border-yellow-400/50 pitch-canvas shadow-[0_0_35px_rgba(0,0,0,0.9)]">
+                    <div class="absolute inset-0 pointer-events-none">
+                        <div class="absolute inset-3 border-2 pitch-line-gold rounded-md"></div>
+                        <div class="absolute top-1/2 left-3 right-3 h-0.5 pitch-bg-gold transform -translate-y-1/2"></div>
+                        <div class="absolute top-1/2 left-1/2 w-32 h-32 border-2 pitch-line-gold rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                        <div class="absolute top-1/2 left-1/2 w-2.5 h-2.5 pitch-bg-gold rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-[0_0_8px_#facc15]"></div>
+                        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-3/5 h-1/6 border-b-2 border-x-2 pitch-line-gold"></div>
+                        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-1/3 h-[7%] border-b-2 border-x-2 pitch-line-gold"></div>
+                        <div class="absolute top-[19.6%] left-1/2 -translate-x-1/2 w-24 h-12 border-b-2 pitch-line-gold rounded-b-full"></div>
+                        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 w-3/5 h-1/6 border-t-2 border-x-2 pitch-line-gold"></div>
+                        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 w-1/3 h-[7%] border-t-2 border-x-2 pitch-line-gold"></div>
+                        <div class="absolute bottom-[19.6%] left-1/2 -translate-x-1/2 w-24 h-12 border-t-2 pitch-line-gold rounded-t-full"></div>
+                    </div>
+
+                    <div id="players-pitch-container" class="absolute inset-0 z-10"></div>
+                </div>
+
+                <div class="w-full flex justify-between items-center mt-4 pt-3 border-t border-brand-border text-[11px] text-slate-500 font-medium px-1">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-crown text-yellow-400"></i> PITCHAZO Lineup Builder</span>
+                    <span id="export-date"></span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODALS -->
+    <div id="edit-player-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-brand-card border border-yellow-400/50 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-5 gold-box-glow">
+            <div class="flex justify-between items-center border-b border-brand-border pb-3">
+                <h3 class="text-sm font-black text-yellow-400 flex items-center gap-2 uppercase tracking-wider">
+                    <i class="fa-solid fa-user-gear"></i> Edit Player Details
+                </h3>
+                <button id="close-modal-btn" class="text-slate-400 hover:text-yellow-400 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="form-edit-player" class="space-y-4">
+                <input type="hidden" id="edit-player-id">
+                <div class="grid grid-cols-12 gap-3">
+                    <div class="col-span-3">
+                        <label class="block text-[10px] font-semibold text-slate-400 mb-1">Jersey No.</label>
+                        <input type="number" id="edit-player-number" min="1" max="99" required class="w-full bg-black border border-brand-border rounded-xl px-2 py-2 text-xs text-center font-extrabold text-yellow-400 focus:border-yellow-400 focus:outline-none">
+                    </div>
+                    <div class="col-span-9">
+                        <label class="block text-[10px] font-semibold text-slate-400 mb-1">Player Name</label>
+                        <input type="text" id="edit-player-name" required class="w-full bg-black border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:border-yellow-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-400 mb-1">Position / Role</label>
+                        <select id="edit-player-role" class="w-full bg-black border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:border-yellow-400 focus:outline-none">
+                            <option value="GK">GK (Goalkeeper)</option>
+                            <option value="CB">CB (Center Back)</option>
+                            <option value="LB">LB (Left Back)</option>
+                            <option value="RB">RB (Right Back)</option>
+                            <option value="CDM">CDM (Defensive Mid)</option>
+                            <option value="CM">CM (Central Mid)</option>
+                            <option value="CAM">CAM (Attacking Mid)</option>
+                            <option value="LW">LW (Left Wing)</option>
+                            <option value="RW">RW (Right Wing)</option>
+                            <option value="ST">ST (Striker)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-400 mb-1">Overall Rating (OVR)</label>
+                        <input type="number" id="edit-player-rating" min="50" max="99" class="w-full bg-black border border-brand-border rounded-xl px-3 py-2 text-xs text-white focus:border-yellow-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" id="btn-delete-player" class="px-4 py-2.5 bg-rose-950/40 text-rose-400 hover:bg-rose-600 hover:text-white rounded-xl text-xs font-bold transition border border-rose-800/40 flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold rounded-xl text-xs uppercase tracking-wider transition">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="swap-player-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-brand-card border border-yellow-400/50 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-5 gold-box-glow">
+            <div class="flex justify-between items-center border-b border-brand-border pb-3">
+                <h3 class="text-sm font-black text-yellow-400 flex items-center gap-2 uppercase tracking-wider">
+                    <i class="fa-solid fa-right-left"></i> Select Starter to Replace
+                </h3>
+                <button id="close-swap-modal-btn" class="text-slate-400 hover:text-yellow-400 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-400">Choose which starting player you want to replace on the pitch:</p>
+            <div id="swap-starters-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+        </div>
+    </div>
+
+    <!-- FOOTER (SAMAKAN DENGAN UNIFORM PITCHAZO) -->
+    <footer class="site-footer">
+        <div class="footer-brand">PITCHAZO</div>
+        <div class="footer-line"></div>
+        <p>Football Lineup Builder</p>
+        <span>© 2026 PITCHAZO. All rights reserved.</span>
+    </footer>
+
+    <script>
+        const FORMATIONS = {
+            '4-3-3': [
+                { role: 'GK', x: 50, y: 88 }, { role: 'LB', x: 16, y: 72 }, { role: 'CB', x: 38, y: 74 },
+                { role: 'CB', x: 62, y: 74 }, { role: 'RB', x: 84, y: 72 }, { role: 'CM', x: 32, y: 48 },
+                { role: 'CM', x: 50, y: 52 }, { role: 'CM', x: 68, y: 48 }, { role: 'LW', x: 22, y: 22 },
+                { role: 'ST', x: 50, y: 16 }, { role: 'RW', x: 78, y: 22 }
+            ],
+            '4-2-3-1': [
+                { role: 'GK', x: 50, y: 88 }, { role: 'LB', x: 16, y: 72 }, { role: 'CB', x: 38, y: 74 },
+                { role: 'CB', x: 62, y: 74 }, { role: 'RB', x: 84, y: 72 }, { role: 'CDM', x: 35, y: 56 },
+                { role: 'CDM', x: 65, y: 56 }, { role: 'CAM', x: 22, y: 35 }, { role: 'CAM', x: 50, y: 35 },
+                { role: 'CAM', x: 78, y: 35 }, { role: 'ST', x: 50, y: 16 }
+            ],
+            '4-4-2': [
+                { role: 'GK', x: 50, y: 88 }, { role: 'LB', x: 16, y: 72 }, { role: 'CB', x: 38, y: 74 },
+                { role: 'CB', x: 62, y: 74 }, { role: 'RB', x: 84, y: 72 }, { role: 'LM', x: 16, y: 45 },
+                { role: 'CM', x: 38, y: 48 }, { role: 'CM', x: 62, y: 48 }, { role: 'RM', x: 84, y: 45 },
+                { role: 'ST', x: 35, y: 18 }, { role: 'ST', x: 65, y: 18 }
+            ],
+            '3-5-2': [
+                { role: 'GK', x: 50, y: 88 }, { role: 'CB', x: 25, y: 74 }, { role: 'CB', x: 50, y: 76 },
+                { role: 'CB', x: 75, y: 74 }, { role: 'LWB', x: 12, y: 48 }, { role: 'CDM', x: 36, y: 56 },
+                { role: 'CDM', x: 64, y: 56 }, { role: 'CAM', x: 50, y: 38 }, { role: 'RWB', x: 88, y: 48 },
+                { role: 'ST', x: 35, y: 18 }, { role: 'ST', x: 65, y: 18 }
+            ],
+            '3-4-3': [
+                { role: 'GK', x: 50, y: 88 }, { role: 'CB', x: 25, y: 74 }, { role: 'CB', x: 50, y: 76 },
+                { role: 'CB', x: 75, y: 74 }, { role: 'LM', x: 16, y: 48 }, { role: 'CM', x: 38, y: 50 },
+                { role: 'CM', x: 62, y: 50 }, { role: 'RM', x: 84, y: 48 }, { role: 'LW', x: 22, y: 22 },
+                { role: 'ST', x: 50, y: 16 }, { role: 'RW', x: 78, y: 22 }
+            ],
+            '5-3-2': [
+                { role: 'GK', x: 50, y: 88 }, { role: 'LWB', x: 12, y: 68 }, { role: 'CB', x: 32, y: 74 },
+                { role: 'CB', x: 50, y: 76 }, { role: 'CB', x: 68, y: 74 }, { role: 'RWB', x: 88, y: 68 },
+                { role: 'CM', x: 30, y: 46 }, { role: 'CM', x: 50, y: 48 }, { role: 'CM', x: 70, y: 46 },
+                { role: 'ST', x: 35, y: 18 }, { role: 'ST', x: 65, y: 18 }
+            ]
+        };
+
+        const EUROPEAN_STARS = [
+            { id: 'star_1', name: 'K. Mbappé', number: 10, role: 'ST', rating: 91 },
+            { id: 'star_2', name: 'H. Kane', number: 9, role: 'ST', rating: 91 },
+            { id: 'star_3', name: 'K. De Bruyne', number: 17, role: 'CM', rating: 88 },
+            { id: 'star_4', name: 'L. Yamal', number: 10, role: 'RW', rating: 91 },
+            { id: 'star_5', name: 'M. Salah', number: 11, role: 'RW', rating: 88 },
+            { id: 'star_6', name: 'V. van Dijk', number: 4, role: 'CB', rating: 88 },
+            { id: 'star_7', name: 'T. Courtois', number: 1, role: 'GK', rating: 89 }
+        ];
+
+        let appState = {
+            teamName: 'MANCHESTER CITY',
+            managerName: 'Enzo Maresca',
+            currentFormation: '4-3-3',
+            nodeStyle: 'glowing-circle',
+            accentColor: '#facc15',
+            starters: [],
+            bench: [],
+            activeSwapBenchId: null
+        };
+
+        function initDefaultSquad() {
+            const realMadridXI = [
+                { name: 'G. Donnarumma', number: 1, role: 'GK', rating: 89 },
+                { name: 'J. Gvardiol', number: 24, role: 'LB', rating: 87 },
+                { name: 'M. Guéhi', number: 6, role: 'CB', rating: 88 },
+                { name: 'R. Dias', number: 3, role: 'CB', rating: 87 },
+                { name: 'M. Nunes', number: 27, role: 'RB', rating: 85 },
+                { name: 'E. Anderson', number: 5, role: 'CM', rating: 88 },
+                { name: 'A. Bouaddi', number: 32, role: 'CM', rating: 85 },
+                { name: 'E. Fernández', number: 17, role: 'CM', rating: 89 },
+                { name: 'A. Semenyo', number: 42, role: 'LW', rating: 88 },
+                { name: 'E. Haaland', number: 9, role: 'ST', rating: 91 },
+                { name: 'R. Cherki', number: 10, role: 'RW', rating: 87 }
+            ];
+
+            const coords = FORMATIONS['4-3-3'];
+            appState.starters = realMadridXI.map((p, idx) => ({
+                id: 'player_' + Date.now() + '_' + idx,
+                name: p.name,
+                number: p.number,
+                role: coords[idx].role,
+                rating: p.rating,
+                x: coords[idx].x,
+                y: coords[idx].y
+            }));
+
+            appState.bench = [
+                { id: 'bench_1', name: 'P. Foden', number: 47, role: 'RW', rating: 85 },
+                { id: 'bench_2', name: 'J. Doku', number: 11, role: 'LW', rating: 87 },
+                { id: 'bench_3', name: 'A. Khusanov', number: 45, role: 'CB', rating: 84 },
+                { id: 'bench_4', name: 'Rodri', number: 16, role: 'CDM', rating: 91 }
+            ];
+        }
+
+        const pitchContainer = document.getElementById('players-pitch-container');
+        const benchListEl = document.getElementById('bench-list');
+        const formationButtonsContainer = document.getElementById('formation-buttons');
+        const presetPlayersContainer = document.getElementById('preset-players-container');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initDefaultSquad();
+            renderFormationButtons();
+            renderPresetPlayers();
+            renderPitch();
+            renderBench();
+            setupEventListeners();
+            setupHeroPitchInteractive();
+            
+            const today = new Date();
+            document.getElementById('export-date').innerText = today.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        });
+
+        function renderFormationButtons() {
+            formationButtonsContainer.innerHTML = '';
+            Object.keys(FORMATIONS).forEach(fmt => {
+                const btn = document.createElement('button');
+                const active = appState.currentFormation === fmt;
+                btn.className = `py-2.5 rounded-xl text-xs font-black border transition ${active ? 'bg-yellow-400 text-black border-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.3)]' : 'bg-black text-slate-300 border-brand-border hover:border-yellow-400/50'}`;
+                btn.innerText = fmt;
+                btn.addEventListener('click', () => applyFormation(fmt));
+                formationButtonsContainer.appendChild(btn);
+            });
+        }
+
+        function applyFormation(formationKey) {
+            appState.currentFormation = formationKey;
+            document.getElementById('display-formation-name').innerText = formationKey;
+            renderFormationButtons();
+
+            const coords = FORMATIONS[formationKey];
+            appState.starters.forEach((player, idx) => {
+                if (coords[idx]) {
+                    player.x = coords[idx].x;
+                    player.y = coords[idx].y;
+                    player.role = coords[idx].role;
+                }
+            });
+
+            renderPitch();
+        }
+
+        function renderPresetPlayers() {
+            presetPlayersContainer.innerHTML = '';
+            EUROPEAN_STARS.forEach(p => {
+                const badge = document.createElement('button');
+                badge.className = 'px-3 py-1.5 rounded-full bg-black hover:bg-zinc-900 border border-brand-border hover:border-yellow-400 text-xs text-slate-200 transition flex items-center gap-1.5 shadow-sm';
+                badge.innerHTML = `<span class="font-black text-yellow-400">${p.rating}</span> <span>${p.name}</span> <span class="text-[10px] text-slate-500">(${p.role})</span>`;
+                badge.addEventListener('click', () => addPresetToBench(p));
+                presetPlayersContainer.appendChild(badge);
+            });
+        }
+
+        function addPresetToBench(preset) {
+            const newPlayer = {
+                id: 'player_' + Date.now(),
+                name: preset.name,
+                number: preset.number,
+                role: preset.role,
+                rating: preset.rating,
+                x: 50,
+                y: 50
+            };
+            appState.bench.push(newPlayer);
+            renderBench();
+            showNotification(`Added ${preset.name} to Substitutes`);
+        }
+
+        function renderPitch() {
+            pitchContainer.innerHTML = '';
+
+            appState.starters.forEach((player) => {
+                const node = document.createElement('div');
+                node.className = 'player-node absolute transform -translate-x-1/2 -translate-y-1/2 cursor-grab flex flex-col items-center group';
+                node.style.left = `${player.x}%`;
+                node.style.top = `${player.y}%`;
+                node.setAttribute('data-id', player.id);
+
+                if (appState.nodeStyle === 'glowing-circle') {
+                    node.innerHTML = `
+                        <div class="relative flex flex-col items-center pointer-events-none">
+                            <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black border-2 border-yellow-400 text-yellow-400 font-extrabold text-xs sm:text-sm flex items-center justify-center gold-node-glow transition-all duration-300 relative export-render-fix">
+                                <span class="leading-none flex items-center justify-center pt-0.5">${player.number}</span>
+                                <div class="absolute -top-1 -right-2 bg-yellow-400 text-black text-[9px] font-black px-1.5 py-0.2 rounded-full border border-black shadow-md export-render-fix">
+                                    ${player.rating || 85}
+                                </div>
+                            </div>
+                            <div class="mt-1.5 px-2.5 py-1 bg-black/90 border border-yellow-400/40 rounded-md shadow-2xl text-center min-w-[70px] max-w-[110px] group-hover:border-yellow-400 transition flex flex-col items-center justify-center">
+                                <div class="text-[10px] sm:text-[11px] font-extrabold text-white truncate leading-snug w-full text-center">${player.name}</div>
+                                <div class="text-[8px] font-black text-yellow-400 uppercase tracking-widest leading-none mt-0.5 text-center">${player.role}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    node.innerHTML = `
+                        <div class="relative flex flex-col items-center pointer-events-none">
+                            <div class="w-10 h-10 rounded-xl bg-black border-2 border-yellow-400 text-yellow-400 font-black text-xs flex items-center justify-center shadow-lg relative export-render-fix">
+                                <span class="leading-none flex items-center justify-center pt-0.5">${player.number}</span>
+                                <div class="absolute -top-2 -right-2 bg-yellow-400 text-black text-[9px] font-black px-1.5 rounded-full export-render-fix">
+                                    ${player.rating || 85}
+                                </div>
+                            </div>
+                            <div class="mt-1 px-2 py-0.5 bg-black/90 border border-brand-border rounded text-center">
+                                <span class="text-[10px] font-bold text-white">${player.name}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                node.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    openEditModal(player.id);
+                });
+
+                makeDraggableSmooth(node, player);
+                pitchContainer.appendChild(node);
+            });
+
+            document.getElementById('squad-count').innerText = appState.starters.length;
+        }
+
+        function makeDraggableSmooth(element, playerObj) {
+            let isDragging = false;
+            let pitchEl = document.getElementById('football-pitch');
+
+            const onStart = (e) => {
+                if (e.button !== undefined && e.button !== 0) return;
+                isDragging = true;
+                element.classList.add('dragging');
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                updatePosition(clientX, clientY);
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                updatePosition(clientX, clientY);
+            };
+
+            const updatePosition = (clientX, clientY) => {
+                const rect = pitchEl.getBoundingClientRect();
+                let posX = ((clientX - rect.left) / rect.width) * 100;
+                let posY = ((clientY - rect.top) / rect.height) * 100;
+
+                posX = Math.max(4, Math.min(96, posX));
+                posY = Math.max(4, Math.min(96, posY));
+
+                element.style.left = `${posX}%`;
+                element.style.top = `${posY}%`;
+
+                playerObj.x = Math.round(posX);
+                playerObj.y = Math.round(posY);
+            };
+
+            const onEnd = () => {
+                if (isDragging) {
+                    isDragging = false;
+                    element.classList.remove('dragging');
+                }
+            };
+
+            element.addEventListener('mousedown', onStart);
+            element.addEventListener('touchstart', onStart, { passive: true });
+
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('touchmove', onMove, { passive: true });
+
+            window.addEventListener('mouseup', onEnd);
+            window.addEventListener('touchend', onEnd);
+        }
+
+        function renderBench() {
+            benchListEl.innerHTML = '';
+            document.getElementById('bench-count').innerText = appState.bench.length;
+
+            if (appState.bench.length === 0) {
+                benchListEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No substitutes available.</p>`;
+                return;
+            }
+
+            appState.bench.forEach(player => {
+                const item = document.createElement('div');
+                item.className = 'bg-black border border-brand-border p-2.5 rounded-xl flex items-center justify-between gap-2 hover:border-yellow-400/50 transition group';
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-zinc-900 border border-yellow-400/50 flex items-center justify-center text-xs font-black text-yellow-400">
+                            ${player.number}
+                        </div>
+                        <div>
+                            <div class="text-xs font-extrabold text-white group-hover:text-yellow-400 transition">${player.name}</div>
+                            <div class="text-[10px] text-slate-400 flex items-center gap-2">
+                                <span class="text-yellow-400 font-bold">${player.role}</span>
+                                <span class="text-zinc-600">•</span>
+                                <span class="px-1.5 py-0.2 rounded bg-zinc-900 border border-yellow-400/30 text-yellow-300 font-black text-[9px]">OVR ${player.rating || 85}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button class="swap-btn px-3 py-1 bg-yellow-400/10 text-yellow-400 hover:bg-yellow-400 hover:text-black border border-yellow-400/40 text-[10px] font-extrabold rounded-lg transition" data-id="${player.id}">
+                            <i class="fa-solid fa-right-left mr-1"></i> Swap
+                        </button>
+                        <button class="edit-bench-btn p-1.5 text-slate-400 hover:text-yellow-400 text-xs transition" data-id="${player.id}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    </div>
+                `;
+
+                item.querySelector('.swap-btn').addEventListener('click', () => openSwapModal(player.id));
+                item.querySelector('.edit-bench-btn').addEventListener('click', () => openEditModal(player.id));
+
+                benchListEl.appendChild(item);
+            });
+        }
+
+        function openSwapModal(benchPlayerId) {
+            appState.activeSwapBenchId = benchPlayerId;
+            const benchPlayer = appState.bench.find(p => p.id === benchPlayerId);
+            if (!benchPlayer) return;
+
+            const swapListEl = document.getElementById('swap-starters-list');
+            swapListEl.innerHTML = '';
+
+            appState.starters.forEach(starter => {
+                const row = document.createElement('div');
+                row.className = 'bg-black border border-brand-border p-2.5 rounded-xl flex items-center justify-between gap-2 hover:border-yellow-400 cursor-pointer transition';
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-zinc-900 border border-yellow-400/50 flex items-center justify-center text-xs font-black text-yellow-400">
+                            ${starter.number}
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-white">${starter.name}</div>
+                            <div class="text-[10px] text-yellow-400 font-semibold">${starter.role} • OVR ${starter.rating || 85}</div>
+                        </div>
+                    </div>
+                    <button class="px-2.5 py-1 bg-yellow-400 text-black text-[10px] font-extrabold rounded-lg">Select</button>
+                `;
+                row.addEventListener('click', () => executeSwap(benchPlayerId, starter.id));
+                swapListEl.appendChild(row);
+            });
+
+            document.getElementById('swap-player-modal').classList.remove('hidden');
+        }
+
+        function closeSwapModal() {
+            document.getElementById('swap-player-modal').classList.add('hidden');
+            appState.activeSwapBenchId = null;
+        }
+
+        function executeSwap(benchPlayerId, starterPlayerId) {
+            const benchIndex = appState.bench.findIndex(p => p.id === benchPlayerId);
+            const starterIndex = appState.starters.findIndex(p => p.id === starterPlayerId);
+
+            if (benchIndex === -1 || starterIndex === -1) return;
+
+            const benchPlayer = appState.bench[benchIndex];
+            const starterPlayer = appState.starters[starterIndex];
+
+            const tempX = starterPlayer.x;
+            const tempY = starterPlayer.y;
+
+            benchPlayer.x = tempX;
+            benchPlayer.y = tempY;
+
+            appState.starters[starterIndex] = benchPlayer;
+            appState.bench[benchIndex] = starterPlayer;
+
+            renderPitch();
+            renderBench();
+            closeSwapModal();
+            showNotification(`Substituted: ${benchPlayer.name} IN ➔ ${starterPlayer.name} OUT`);
+        }
+
+        function openEditModal(playerId) {
+            const player = appState.starters.find(p => p.id === playerId) || appState.bench.find(p => p.id === playerId);
+            if (!player) return;
+
+            document.getElementById('edit-player-id').value = player.id;
+            document.getElementById('edit-player-name').value = player.name;
+            document.getElementById('edit-player-number').value = player.number;
+            document.getElementById('edit-player-role').value = player.role;
+            document.getElementById('edit-player-rating').value = player.rating || 85;
+
+            document.getElementById('edit-player-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-player-modal').classList.add('hidden');
+        }
+
+        function setupHeroPitchInteractive() {
+            const nodes = document.querySelectorAll('.hero-interactive-node');
+            const ball = document.getElementById('hero-passing-ball');
+            
+            nodes.forEach(node => {
+                node.addEventListener('click', () => {
+                    const rect = node.getBoundingClientRect();
+                    const parentRect = document.getElementById('mini-hero-pitch').getBoundingClientRect();
+                    
+                    const posX = ((rect.left + rect.width/2 - parentRect.left) / parentRect.width) * 100;
+                    const posY = ((rect.top + rect.height/2 - parentRect.top) / parentRect.height) * 100;
+
+                    ball.classList.remove('anim-passing-ball');
+                    ball.style.transition = 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+                    ball.style.left = `${posX}%`;
+                    ball.style.top = `${posY}%`;
+
+                    setTimeout(() => {
+                        ball.classList.add('anim-passing-ball');
+                        ball.style.transition = '';
+                    }, 2000);
+                });
+            });
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const targetTab = e.currentTarget.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-btn').forEach(b => {
+                        b.classList.remove('bg-yellow-400', 'text-black', 'font-extrabold', 'shadow-[0_0_15px_rgba(250,204,21,0.3)]');
+                        b.classList.add('hover:text-yellow-400');
+                    });
+                    e.currentTarget.classList.add('bg-yellow-400', 'text-black', 'font-extrabold', 'shadow-[0_0_15px_rgba(250,204,21,0.3)]');
+
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                    document.getElementById(targetTab).classList.remove('hidden');
+                });
+            });
+
+            document.getElementById('input-team-name').addEventListener('input', (e) => {
+                appState.teamName = e.target.value.toUpperCase() || 'PITCHAZO FC';
+                document.getElementById('display-team-name').innerText = appState.teamName;
+            });
+
+            document.getElementById('input-manager-name').addEventListener('input', (e) => {
+                appState.managerName = e.target.value || 'Carlo Ancelotti';
+                document.getElementById('display-manager-name').innerText = appState.managerName;
+            });
+
+            document.querySelectorAll('input[name="node-style"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    appState.nodeStyle = e.target.value;
+                    renderPitch();
+                });
+            });
+
+            document.getElementById('form-add-player').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('new-player-name').value;
+                const number = parseInt(document.getElementById('new-player-number').value);
+                const role = document.getElementById('new-player-role').value;
+                const rating = parseInt(document.getElementById('new-player-rating').value);
+
+                const newPlayer = {
+                    id: 'player_' + Date.now(),
+                    name,
+                    number,
+                    role,
+                    rating,
+                    x: 50,
+                    y: 50
+                };
+
+                appState.bench.push(newPlayer);
+                renderBench();
+                showNotification(`Added ${name} to Substitutes Bench!`);
+                e.target.reset();
+            });
+
+            document.getElementById('form-edit-player').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('edit-player-id').value;
+                const player = appState.starters.find(p => p.id === id) || appState.bench.find(p => p.id === id);
+
+                if (player) {
+                    player.name = document.getElementById('edit-player-name').value;
+                    player.number = parseInt(document.getElementById('edit-player-number').value);
+                    player.role = document.getElementById('edit-player-role').value;
+                    player.rating = parseInt(document.getElementById('edit-player-rating').value);
+
+                    renderPitch();
+                    renderBench();
+                    closeEditModal();
+                    showNotification('Player details updated successfully');
+                }
+            });
+
+            document.getElementById('btn-delete-player').addEventListener('click', () => {
+                const id = document.getElementById('edit-player-id').value;
+                appState.starters = appState.starters.filter(p => p.id !== id);
+                appState.bench = appState.bench.filter(p => p.id !== id);
+                renderPitch();
+                renderBench();
+                closeEditModal();
+                showNotification('Player removed');
+            });
+
+            document.getElementById('close-modal-btn').addEventListener('click', closeEditModal);
+            document.getElementById('close-swap-modal-btn').addEventListener('click', closeSwapModal);
+
+            document.getElementById('btn-export-img').addEventListener('click', exportPitchAsImage);
+        }
+
+        function exportPitchAsImage() {
+            const captureArea = document.getElementById('pitch-export-area');
+            showNotification('Generating high-resolution PNG image...');
+
+            html2canvas(captureArea, {
+                backgroundColor: '#080808',
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                onclone: (clonedDoc) => {
+                    const labels = clonedDoc.querySelectorAll('.player-node div, .player-node span');
+                    labels.forEach(el => {
+                        el.style.transform = 'none';
+                    });
+                }
+            }).then(canvas => {
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `PITCHAZO_${appState.teamName.replace(/\s+/g, '_')}_${appState.currentFormation}.png`;
+                link.href = image;
+                link.click();
+                showNotification('Lineup image downloaded successfully!');
+            }).catch(err => {
+                console.error(err);
+                showNotification('Failed to export image');
+            });
+        }
+
+        function showNotification(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-5 right-5 bg-black border border-yellow-400/60 text-yellow-300 px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold z-50 flex items-center gap-2.5 transform transition-all duration-300 translate-y-10 opacity-0 gold-box-glow';
+            toast.innerHTML = `<div class="w-5 h-5 rounded-full bg-yellow-400 text-black font-black flex items-center justify-center text-[10px]">P</div> <span>${msg}</span>`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
