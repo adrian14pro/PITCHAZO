@@ -21,7 +21,7 @@ const players = [
         name: "?",
         club: "?",
         position: "?",
-        image: "question.jpg"
+        image: "Вопрос.jpg"
     },
 
     {
@@ -29,7 +29,7 @@ const players = [
         name: "?",
         club: "?",
         position: "?",
-        image: "question.jpg"
+        image: "Вопрос.jpg"
     },
 
     {
@@ -37,7 +37,7 @@ const players = [
         name: "?",
         club: "?",
         position: "?",
-        image: "question.jpg"
+        image: "Вопрос.jpg"
     },
 
     {
@@ -45,7 +45,7 @@ const players = [
         name: "?",
         club: "?",
         position: "?",
-        image: "question.jpg"
+        image: "Вопрос.jpg"
     },
 
     {
@@ -53,7 +53,7 @@ const players = [
         name: "?",
         club: "?",
         position: "?",
-        image: "question.jpg"
+        image: "Вопрос.jpg"
     },
 
     {
@@ -61,7 +61,7 @@ const players = [
         name: "?",
         club: "?",
         position: "?",
-        image: "question.jpg"
+        image: "Вопрос.jpg"
     },
 
     {
@@ -69,7 +69,7 @@ const players = [
         name: "?",
         club: "?",
         position: "?",
-        image: "question.jpg"
+        image: "Вопрос.jpg"
     },
 
     {
@@ -77,7 +77,7 @@ const players = [
         name: "?",
         club: "?",
         position: "?",
-        image: "question.jpg"
+        image: "Вопрос.jpg"
     },
 
     {
@@ -85,7 +85,7 @@ const players = [
         name: "?",
         club: "?",
         position: "?",
-        image: "question.jpg"
+        image: "Вопрос.jpg"
     }
 
 ];
